@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+      "experimentalDecorators": true,
+      "jsx": "preserve",
+      "allowSyntheticDefaultImports": true,
+      "esModuleInterop": true
+    }
+  }

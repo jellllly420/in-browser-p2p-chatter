@@ -10,19 +10,7 @@
         Find
       </button>
     </p>
-    <!--
-    <p v-for="(multiaddr, idx) in otherPeerMultiaddrs" :key="'ma_' + idx">
-      Other peer multiaddr: {{ multiaddr.toString() }}
-    </p>
-    <p v-for="(protocol, idx) in otherPeerProtocols" :key="'p_' + idx">
-      Other peer protocol: {{ protocol }}
-    </p>
-    -->
     <div v-if="otherPeerMultiaddrs.length > 0 && otherPeerProtocols.length > 0">
-    <!--
-      <p>
-       Other peer multiaddr: {{ otherPeerMultiaddr }}
-      </p> -->
       <p>
         Other peer protocol: {{ otherPeerProtocol }}
         <button @click="dialProtocol">
@@ -75,6 +63,7 @@ export default class App extends Vue {
   chatQueue: any = false;
 
   async init() {
+    // Use Libp2p.create instead of createLibp2p to avoid import errors 
     this.libp2p = await Libp2p.create({
       addresses: {
         // Listen through relay servers
@@ -103,7 +92,7 @@ export default class App extends Vue {
     this.myPeerId = this.libp2p.peerId.toB58String();
     this.libp2p.handle(chatProtocol, ({ connection, stream, protocol }) => {
       this.remotePeerId = connection.remoteAddr.getPeerId();
-      // Init an async data stream
+      // Init an async data stream on the receiver side
       pipe(
         stream,
         (source) => {
@@ -124,6 +113,7 @@ export default class App extends Vue {
     this.init();
   }
 
+  // Wrapper function to store some infos.
   async findOtherPeer() {
     let peerId = PeerId.parse(this.otherPeerId);
     let result = await this.libp2p.peerRouting.findPeer(peerId);
@@ -133,7 +123,7 @@ export default class App extends Vue {
     this.otherPeerProtocol = chatProtocol; // should be the last protocol (here for conveninence)
   }
 
-  // Wrapper function
+  // Wrapper function to init a async data stream on the sender side.
   async dialProtocol() {
     let peerId = PeerId.parse(this.otherPeerId);
     const { stream, protocol } = await this.libp2p.dialProtocol(
@@ -153,9 +143,9 @@ export default class App extends Vue {
   }
 
   sendMessage() {
-    this.chatQueue.push(this.chatMessage);
     this.messages.push("< " + this.chatMessage);
     this.chatMessage = "";
+    this.chatQueue.push(this.chatMessage);
   }
 }
 </script>
